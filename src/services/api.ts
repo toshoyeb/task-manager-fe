@@ -1,7 +1,7 @@
 import axios from "axios";
 import { Task, TaskStats } from "../types";
 
-const API_URL = "http://localhost:5000/api";
+const API_URL = "https://task-manager-backend-8he0.onrender.com/api";
 
 // Create an axios instance
 const api = axios.create({

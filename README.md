@@ -46,7 +46,7 @@ A modern React application for managing tasks, built with Vite, React, TypeScrip
 
 ## Backend API
 
-This frontend connects to a Node.js/Express backend. Make sure your backend is running at `http://localhost:5000/api`.
+This frontend connects to a Node.js/Express backend at `https://task-manager-backend-8he0.onrender.com/api`.
 
 If your backend is running on a different URL, update the `API_URL` in `src/services/api.ts`.
 

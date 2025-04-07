@@ -8,7 +8,7 @@ import React, {
 } from "react";
 import { useNavigate } from "react-router-dom";
 import { authService } from "../services/api";
-import { AuthState, User } from "../types";
+import { AuthState } from "../types";
 import axios from "axios";
 
 interface AuthContextType extends AuthState {

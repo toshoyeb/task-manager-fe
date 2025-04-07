@@ -168,15 +168,18 @@ const DashboardPage: React.FC = () => {
       {renderCategoriesAndPriorities()}
 
       {taskStats && taskStats.totalTasks === 0 ? (
-        <div className="text-center py-8">
-          <h3 className="text-lg font-medium text-gray-700 mb-2">
+        <div className="flex flex-col items-center justify-center h-64 bg-white rounded-lg shadow-sm p-8 mt-8">
+          <h3 className="text-2xl font-medium text-gray-700 mb-3">
             You have no tasks yet!
           </h3>
-          <p className="text-gray-500 mb-4">
-            Get started by creating your first task.
+          <p className="text-gray-500 mb-6 text-center max-w-md">
+            Get started by creating your first task to begin tracking your
+            progress.
           </p>
           <Link to="/tasks/new">
-            <Button variant="primary">Create Your First Task</Button>
+            <Button variant="primary" size="lg">
+              Create Your First Task
+            </Button>
           </Link>
         </div>
       ) : (

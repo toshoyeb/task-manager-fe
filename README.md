@@ -1,54 +1,88 @@
-# React + TypeScript + Vite
+# Task Manager Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A modern React application for managing tasks, built with Vite, React, TypeScript, and Tailwind CSS.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **User Authentication**: Sign up and log in
+- **Task Management**: Create, read, update, and delete tasks
+- **Task Organization**: Categorize tasks and add tags
+- **Task Status**: Mark tasks as completed or pending
+- **Task Filters**: Filter by category, status, and search by title
+- **Dashboard**: View statistics about your tasks
+- **Responsive Design**: Works on mobile and desktop
 
-## Expanding the ESLint configuration
+## Tech Stack
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- **Framework**: React with TypeScript
+- **Build Tool**: Vite
+- **Styling**: Tailwind CSS
+- **Routing**: React Router
+- **HTTP Client**: Axios
+- **Deployment**: Vercel
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+## Getting Started
+
+1. **Clone the repository**:
+   ```bash
+   git clone <repository-url>
+   cd task-manager-fe
+   ```
+
+2. **Install dependencies**:
+   ```bash
+   npm install
+   ```
+
+3. **Start the development server**:
+   ```bash
+   npm run dev
+   ```
+
+4. **Build for production**:
+   ```bash
+   npm run build
+   ```
+
+## Backend API
+
+This frontend connects to a Node.js/Express backend. Make sure your backend is running at `http://localhost:5000/api`.
+
+If your backend is running on a different URL, update the `API_URL` in `src/services/api.ts`.
+
+## Project Structure
+
+```
+task-manager-fe/
+├── src/
+│   ├── components/        # Reusable UI components
+│   │   ├── common/        # General-purpose components
+│   │   └── layout/        # Layout components
+│   ├── context/           # React context providers
+│   ├── pages/             # Page components
+│   ├── services/          # API services
+│   ├── types/             # TypeScript type definitions
+│   ├── App.tsx            # Main application component
+│   └── main.tsx           # Entry point
+├── public/                # Static assets
+├── index.html             # HTML template
+└── tailwind.config.js     # Tailwind CSS configuration
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Deployment
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+### Deploying to Vercel
 
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
-```
+1. Create a Vercel account if you don't have one.
+2. Install the Vercel CLI:
+   ```bash
+   npm install -g vercel
+   ```
+3. Deploy to Vercel:
+   ```bash
+   vercel
+   ```
+
+## License
+
+ISC

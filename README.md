@@ -2,6 +2,17 @@
 
 A modern React application for managing tasks, built with Vite, React, TypeScript, and Tailwind CSS.
 
+## Deployment
+
+### Deployed on Render
+
+This frontend application is deployed and accessible at:
+- **Live App URL**: `https://task-manager-fe-rv0m.onrender.com`
+- **Platform**: [Render](https://render.com)
+- **Deployment Type**: Static Site
+- **Build Command**: `npm run build`
+- **Publish Directory**: `dist`
+
 ## Features
 
 - **User Authentication**: Sign up and log in
@@ -19,7 +30,7 @@ A modern React application for managing tasks, built with Vite, React, TypeScrip
 - **Styling**: Tailwind CSS
 - **Routing**: React Router
 - **HTTP Client**: Axios
-- **Deployment**: Vercel
+- **Deployment**: Render
 
 ## Getting Started
 
@@ -65,23 +76,10 @@ task-manager-fe/
 │   ├── App.tsx            # Main application component
 │   └── main.tsx           # Entry point
 ├── public/                # Static assets
+├── dist/                  # Build output (generated after build)
 ├── index.html             # HTML template
 └── tailwind.config.js     # Tailwind CSS configuration
 ```
-
-## Deployment
-
-### Deploying to Vercel
-
-1. Create a Vercel account if you don't have one.
-2. Install the Vercel CLI:
-   ```bash
-   npm install -g vercel
-   ```
-3. Deploy to Vercel:
-   ```bash
-   vercel
-   ```
 
 ## License
 

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
+import { useAppDispatch, useAppSelector } from "../hooks/reduxHooks";
 import { RootState } from "../store/store";
 import { register, clearError } from "../store/slices/authSlice";
 import MainLayout from "../components/layout/MainLayout";
@@ -13,8 +13,8 @@ const RegisterPage: React.FC = () => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [validationError, setValidationError] = useState<string | null>(null);
-  const dispatch = useDispatch();
-  const { isLoading, error } = useSelector((state: RootState) => state.auth);
+  const dispatch = useAppDispatch();
+  const { isLoading, error } = useAppSelector((state: RootState) => state.auth);
 
   const validateForm = () => {
     if (password !== confirmPassword) {
@@ -56,7 +56,7 @@ const RegisterPage: React.FC = () => {
 
           {(error || validationError) && (
             <div className="bg-red-50 text-red-500 p-3 rounded-md mb-4 flex justify-between">
-              <p>{validationError || error}</p>
+              <p>{validationError ?? error}</p>
               <button
                 onClick={handleClearError}
                 className="text-red-700 hover:text-red-900 focus:outline-none"

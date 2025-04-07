@@ -1,15 +1,15 @@
 import React, { useEffect } from "react";
 import { Link } from "react-router-dom";
-import { useSelector, useDispatch } from "react-redux";
+import { useAppSelector, useAppDispatch } from "../hooks/reduxHooks";
 import { RootState } from "../store/store";
 import { fetchTaskStats } from "../store/slices/taskSlice";
 import MainLayout from "../components/layout/MainLayout";
 import Button from "../components/common/Button";
 
 const DashboardPage: React.FC = () => {
-  const dispatch = useDispatch();
-  const { user } = useSelector((state: RootState) => state.auth);
-  const { taskStats, isLoading } = useSelector(
+  const dispatch = useAppDispatch();
+  const { user } = useAppSelector((state: RootState) => state.auth);
+  const { taskStats, isLoading } = useAppSelector(
     (state: RootState) => state.tasks
   );
 

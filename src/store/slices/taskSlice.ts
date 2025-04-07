@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import { taskService } from "../../services/api";
-import { Task, TaskStats } from "../../types";
+import { Task, TaskStats, TaskStatus } from "../../types";
 import axios from "axios";
 
 interface TaskState {
@@ -139,6 +139,41 @@ export const fetchTaskStats = createAsyncThunk(
       return await taskService.getTaskStats();
     } catch (error) {
       let errorMessage = "Failed to fetch task statistics";
+      if (axios.isAxiosError(error) && error.response?.data?.error) {
+        errorMessage = error.response.data.error;
+      }
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
+
+export const toggleTaskStatus = createAsyncThunk(
+  "tasks/toggleTaskStatus",
+  async (id: string, { rejectWithValue, dispatch, getState }) => {
+    try {
+      // Get the current state of the task
+      const state = getState() as { tasks: TaskState };
+      const task = state.tasks.tasks.find((task) => task._id === id);
+
+      if (!task) {
+        return rejectWithValue("Task not found");
+      }
+
+      // Toggle the status
+      const newStatus =
+        task.status === TaskStatus.COMPLETED
+          ? TaskStatus.PENDING
+          : TaskStatus.COMPLETED;
+
+      // Update the task with the new status
+      const response = await taskService.updateTask(id, { status: newStatus });
+
+      // Refresh the tasks list
+      dispatch(fetchTasks());
+
+      return response;
+    } catch (error) {
+      let errorMessage = "Failed to update task status";
       if (axios.isAxiosError(error) && error.response?.data?.error) {
         errorMessage = error.response.data.error;
       }

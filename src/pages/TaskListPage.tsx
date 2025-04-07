@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../hooks/reduxHooks";
-import { fetchTasks, deleteTask } from "../store/slices/taskSlice";
+import {
+  fetchTasks,
+  deleteTask,
+  toggleTaskStatus,
+} from "../store/slices/taskSlice";
 import MainLayout from "../components/layout/MainLayout";
 import Button from "../components/common/Button";
 import { TaskStatus, TaskPriority } from "../types";
@@ -43,6 +47,10 @@ const TaskListPage: React.FC = () => {
     }
   };
 
+  const handleToggleStatus = (id: string) => {
+    dispatch(toggleTaskStatus(id));
+  };
+
   const getPriorityBadgeColor = (priority: TaskPriority) => {
     switch (priority) {
       case TaskPriority.HIGH:
@@ -59,11 +67,11 @@ const TaskListPage: React.FC = () => {
   const getStatusBadgeColor = (status: TaskStatus) => {
     switch (status) {
       case TaskStatus.COMPLETED:
-        return "bg-green-100 text-green-800";
+        return "bg-green-100 text-green-800 hover:bg-green-200";
       case TaskStatus.PENDING:
-        return "bg-yellow-100 text-yellow-800";
+        return "bg-yellow-100 text-yellow-800 hover:bg-yellow-200";
       default:
-        return "bg-gray-100 text-gray-800";
+        return "bg-gray-100 text-gray-800 hover:bg-gray-200";
     }
   };
 
@@ -226,23 +234,99 @@ const TaskListPage: React.FC = () => {
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {tasks.map((task) => (
-                <tr key={task._id}>
+                <tr
+                  key={task._id}
+                  className={
+                    task.status === TaskStatus.COMPLETED ? "bg-gray-50" : ""
+                  }
+                >
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">
-                      {task.title}
-                    </div>
-                    <div className="text-sm text-gray-500 truncate max-w-xs">
-                      {task.description}
+                    <div className="flex items-center">
+                      <button
+                        onClick={() => handleToggleStatus(task._id)}
+                        className={`mr-3 flex-shrink-0 h-5 w-5 rounded transition-colors duration-200 ${
+                          task.status === TaskStatus.COMPLETED
+                            ? "bg-green-500 border-green-500"
+                            : "bg-white border border-gray-300 hover:border-blue-500"
+                        } focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-500`}
+                        title={
+                          task.status === TaskStatus.COMPLETED
+                            ? "Mark as pending"
+                            : "Mark as completed"
+                        }
+                      >
+                        {task.status === TaskStatus.COMPLETED && (
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-4 w-4 text-white"
+                            viewBox="0 0 20 20"
+                            fill="currentColor"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                              clipRule="evenodd"
+                            />
+                          </svg>
+                        )}
+                      </button>
+                      <div
+                        className={
+                          task.status === TaskStatus.COMPLETED
+                            ? "line-through text-gray-500"
+                            : ""
+                        }
+                      >
+                        <div className="text-sm font-medium text-gray-900">
+                          {task.title}
+                        </div>
+                        <div className="text-sm text-gray-500 truncate max-w-xs">
+                          {task.description}
+                        </div>
+                      </div>
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span
-                      className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusBadgeColor(
+                    <button
+                      onClick={() => handleToggleStatus(task._id)}
+                      className={`px-3 py-1 inline-flex items-center text-xs leading-5 font-semibold rounded-full cursor-pointer transition-colors duration-200 ${getStatusBadgeColor(
                         task.status
                       )}`}
                     >
-                      {task.status}
-                    </span>
+                      {task.status === TaskStatus.COMPLETED ? (
+                        <>
+                          <svg
+                            className="h-3 w-3 mr-1"
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 20 20"
+                            fill="currentColor"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                              clipRule="evenodd"
+                            />
+                          </svg>
+                          Completed
+                        </>
+                      ) : (
+                        <>
+                          <svg
+                            className="h-3 w-3 mr-1"
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 20 20"
+                            fill="currentColor"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
+                              clipRule="evenodd"
+                            />
+                          </svg>
+                          Pending
+                        </>
+                      )}
+                    </button>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm text-gray-900 capitalize">
@@ -263,7 +347,7 @@ const TaskListPage: React.FC = () => {
                       {formatDate(task.dueDate)}
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <div className="flex space-x-2">
                       <Link
                         to={`/tasks/${task._id}`}

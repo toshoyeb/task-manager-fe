@@ -230,6 +230,12 @@ const TaskListPage: React.FC = () => {
                   scope="col"
                   className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                 >
+                  Tags
+                </th>
+                <th
+                  scope="col"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
                   Actions
                 </th>
               </tr>
@@ -347,6 +353,23 @@ const TaskListPage: React.FC = () => {
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm text-gray-900">
                       {formatDate(task.dueDate)}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="flex flex-wrap gap-1">
+                      {task.tags?.slice(0, 3).map((tag, index) => (
+                        <span
+                          key={index}
+                          className="px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800"
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                      {task.tags && task.tags.length > 3 && (
+                        <span className="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-800">
+                          +{task.tags.length - 3}
+                        </span>
+                      )}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">

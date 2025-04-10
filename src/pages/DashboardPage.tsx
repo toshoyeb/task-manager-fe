@@ -5,7 +5,6 @@ import { RootState } from "../store/store";
 import { fetchTaskStats } from "../store/slices/taskSlice";
 import MainLayout from "../components/layout/MainLayout";
 import Button from "../components/common/Button";
-import ChatSection from "../components/chat/ChatSection";
 
 const DashboardPage: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -167,11 +166,6 @@ const DashboardPage: React.FC = () => {
 
       {renderStats()}
       {renderCategoriesAndPriorities()}
-
-      <div className="mb-8">
-        <h2 className="text-xl font-semibold mb-4">Team Chat</h2>
-        <ChatSection />
-      </div>
 
       {taskStats && taskStats.totalTasks === 0 ? (
         <div className="flex flex-col items-center justify-center h-64 bg-white rounded-lg shadow-sm p-8 mt-8">

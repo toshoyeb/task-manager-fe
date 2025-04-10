@@ -14,6 +14,8 @@ import {
   SocketMessage,
   TypingStatus,
 } from "../types/chat";
+import { useAppSelector, useAppDispatch } from "../hooks/reduxHooks";
+import { logout } from "../store/slices/authSlice";
 
 interface SocketContextType {
   socket: Socket | null;
@@ -41,45 +43,53 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({
   const [socket, setSocket] = useState<Socket | null>(null);
   const [chatState, setChatState] = useState<ChatState>(initialState);
   const [isConnected, setIsConnected] = useState(false);
+  const { token, isAuthenticated } = useAppSelector((state) => state.auth);
+  const dispatch = useAppDispatch();
 
   useEffect(() => {
-    const newSocket = io(process.env.VITE_API_URL || "http://localhost:5000", {
-      withCredentials: true,
-      autoConnect: false,
-    });
+    if (isAuthenticated && token) {
+      const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:5000";
+      console.log(`Connecting socket to: ${apiUrl}`);
+      const newSocket = io(apiUrl, {
+        withCredentials: true,
+        autoConnect: true,
+        auth: { token },
+      });
 
-    setSocket(newSocket);
+      setSocket(newSocket);
 
-    return () => {
-      newSocket.close();
-    };
-  }, []);
+      newSocket.on("connect", () => onConnect(newSocket));
+      newSocket.on("disconnect", onDisconnect);
+      newSocket.on("newMessage", onNewMessage);
+      newSocket.on("messageRead", onMessageRead);
+      newSocket.on("userOnline", onUserOnline);
+      newSocket.on("userOffline", onUserOffline);
+      newSocket.on("typing", onTyping);
+      newSocket.on("connect_error", (err) => {
+        console.error("Socket connection error:", err.message);
+        if (err.message === "Authentication error") {
+          dispatch(logout());
+        }
+      });
 
-  useEffect(() => {
-    if (!socket) return;
+      return () => {
+        console.log("Disconnecting socket...");
+        newSocket.disconnect();
+        setSocket(null);
+        setIsConnected(false);
+      };
+    } else if (socket) {
+      console.log("User not authenticated, disconnecting socket...");
+      socket.disconnect();
+      setSocket(null);
+      setIsConnected(false);
+    }
 
-    socket.on("connect", onConnect);
-    socket.on("disconnect", onDisconnect);
-    socket.on("newMessage", onNewMessage);
-    socket.on("messageRead", onMessageRead);
-    socket.on("userOnline", onUserOnline);
-    socket.on("userOffline", onUserOffline);
-    socket.on("typing", onTyping);
+    return () => {};
+  }, [isAuthenticated, token]);
 
-    return () => {
-      socket.off("connect", onConnect);
-      socket.off("disconnect", onDisconnect);
-      socket.off("newMessage", onNewMessage);
-      socket.off("messageRead", onMessageRead);
-      socket.off("userOnline", onUserOnline);
-      socket.off("userOffline", onUserOffline);
-      socket.off("typing", onTyping);
-    };
-  }, [socket]);
-
-  // Handlers
-  const onConnect = () => {
-    console.log("Connected to socket server");
+  const onConnect = (currentSocket: Socket) => {
+    console.log(`Connected to socket server with id: ${currentSocket.id}`);
     setIsConnected(true);
   };
 
@@ -166,7 +176,6 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({
     }));
   }, []);
 
-  // Memoize value to avoid unnecessary re-renders
   const value = useMemo(
     () => ({
       socket,

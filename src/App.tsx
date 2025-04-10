@@ -14,6 +14,7 @@ const RegisterPage = lazy(() => import("./pages/RegisterPage"));
 const DashboardPage = lazy(() => import("./pages/DashboardPage"));
 const TaskListPage = lazy(() => import("./pages/TaskListPage"));
 const TaskFormPage = lazy(() => import("./pages/TaskFormPage"));
+const ChatPage = lazy(() => import("./pages/ChatPage"));
 
 // Private route wrapper
 interface PrivateRouteProps {
@@ -97,6 +98,14 @@ const AppRoutes = () => {
           </PrivateRoute>
         }
       />
+      <Route
+        path="/chat"
+        element={
+          <PrivateRoute>
+            <ChatPage />
+          </PrivateRoute>
+        }
+      />
 
       {/* Task routes */}
       <Route
@@ -125,7 +134,7 @@ const AppRoutes = () => {
       />
 
       {/* Fallback route */}
-      <Route path="*" element={<Navigate to="/" />} />
+      <Route path="*" element={<Navigate to="/dashboard" />} />
     </Routes>
   );
 };

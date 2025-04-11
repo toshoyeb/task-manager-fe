@@ -1,23 +1,31 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useMemo } from "react";
 import { useSocket } from "../../context/SocketContext";
-import { User } from "../../types/chat";
+import { User /* , Message */ } from "../../types/chat";
 import ChatHeader from "./ChatHeader";
 import ChatMessages from "./ChatMessages";
 import ChatInput from "./ChatInput";
 import ChatSidebar from "./ChatSidebar";
+import { useAppSelector } from "../../hooks/reduxHooks";
 
 const ChatContainer: React.FC = () => {
   const { chatState, setCurrentChat, isConnected } = useSocket();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const { user: loggedInUser } = useAppSelector((state) => state.auth);
+  const selectedUser = chatState.currentChat;
+  const loggedInUserId = loggedInUser?._id;
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [chatState.messages]);
+  const filteredMessages = useMemo(() => {
+    if (!selectedUser || !loggedInUser) {
+      return [];
+    }
+    return chatState.messages.filter(
+      (msg) =>
+        (msg.sender._id === loggedInUser._id &&
+          msg.receiver._id === selectedUser._id) ||
+        (msg.receiver._id === loggedInUser._id &&
+          msg.sender._id === selectedUser._id)
+    );
+  }, [chatState.messages, selectedUser, loggedInUser]);
 
   const handleSelectUser = (user: User) => {
     setCurrentChat(user);
@@ -34,19 +42,24 @@ const ChatContainer: React.FC = () => {
           isSidebarOpen ? "w-80" : "w-0"
         } md:w-80 transition-all duration-300 overflow-hidden`}
       >
-        <ChatSidebar onSelectUser={handleSelectUser} />
+        <ChatSidebar
+          onSelectUser={handleSelectUser}
+          selectedUserId={selectedUser?._id || null}
+        />
       </div>
 
       {/* Main Chat Area */}
       <div className="flex-1 flex flex-col">
-        {chatState.currentChat ? (
+        {selectedUser ? (
           <>
             <ChatHeader
-              user={chatState.currentChat}
+              user={selectedUser}
               onMenuClick={() => setIsSidebarOpen(true)}
             />
-            <ChatMessages messages={chatState.messages} />
-            <div ref={messagesEndRef} />
+            <ChatMessages
+              messages={filteredMessages}
+              loggedInUserId={loggedInUserId}
+            />
             <ChatInput />
           </>
         ) : (

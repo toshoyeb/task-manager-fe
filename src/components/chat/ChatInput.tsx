@@ -2,164 +2,149 @@ import React, { useState, useRef, useEffect } from "react";
 import { useSocket } from "../../context/SocketContext";
 import data from "@emoji-mart/data";
 import Picker from "@emoji-mart/react";
+import { IoMdSend } from "react-icons/io";
+import { BsEmojiSmile } from "react-icons/bs";
+import { MdOutlineAttachFile } from "react-icons/md";
 
-const ChatInput: React.FC = () => {
-  const { chatState, sendMessage, setTypingStatus } = useSocket();
-  const [messageText, setMessageText] = useState("");
+interface ChatInputProps {
+  receiverId: string;
+}
+
+const ChatInput: React.FC<ChatInputProps> = ({ receiverId }) => {
+  const [message, setMessage] = useState("");
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const { sendMessage, setTypingStatus } = useSocket();
+  const emojiPickerRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const [isTyping, setIsTyping] = useState(false);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Handle outside click to close emoji picker
   useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        emojiPickerRef.current &&
+        !emojiPickerRef.current.contains(event.target as Node)
+      ) {
+        setShowEmojiPicker(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  // Handle typing status
+  useEffect(() => {
+    if (message && !isTyping) {
+      setIsTyping(true);
+      setTypingStatus(receiverId, true);
+    }
+
+    // Clear previous timeout
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+
+    // Set new timeout
+    typingTimeoutRef.current = setTimeout(() => {
+      if (isTyping) {
+        setIsTyping(false);
+        setTypingStatus(receiverId, false);
+      }
+    }, 2000); // Stop typing after 2 seconds of inactivity
+
     return () => {
       if (typingTimeoutRef.current) {
         clearTimeout(typingTimeoutRef.current);
       }
     };
-  }, []);
-
-  const handleTyping = () => {
-    if (!isTyping) {
-      setIsTyping(true);
-      setTypingStatus(chatState.currentChat?._id ?? "", true);
-    }
-
-    if (typingTimeoutRef.current) {
-      clearTimeout(typingTimeoutRef.current);
-    }
-
-    typingTimeoutRef.current = setTimeout(() => {
-      setIsTyping(false);
-      setTypingStatus(chatState.currentChat?._id ?? "", false);
-    }, 1000);
-  };
+  }, [message, isTyping, receiverId, setTypingStatus]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!messageText.trim() || !chatState.currentChat) return;
+    if (!message.trim()) return;
 
     sendMessage({
-      receiverId: chatState.currentChat._id,
-      text: messageText,
+      receiverId,
+      text: message.trim(),
       type: "text",
     });
 
-    setMessageText("");
+    setMessage("");
     setShowEmojiPicker(false);
+    setIsTyping(false);
+    setTypingStatus(receiverId, false);
+
+    // Focus back on input after sending
+    inputRef.current?.focus();
   };
 
   const handleEmojiSelect = (emoji: any) => {
-    setMessageText((prev) => prev + emoji.native);
+    setMessage((prev) => prev + emoji.native);
+    inputRef.current?.focus();
   };
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !chatState.currentChat) return;
-
-    const fileUrl = URL.createObjectURL(file);
-    const type = file.type.startsWith("image/") ? "image" : "file";
-
-    sendMessage({
-      receiverId: chatState.currentChat._id,
-      text: file.name,
-      type,
-      fileUrl,
-    });
-
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSubmit(e);
     }
   };
 
   return (
-    <div className="bg-white border-t border-gray-200 p-4">
-      <form onSubmit={handleSubmit} className="flex items-center space-x-2">
-        <button
-          type="button"
-          onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-          className="text-gray-500 hover:text-gray-700"
-        >
-          <svg
-            className="w-6 h-6"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+    <form onSubmit={handleSubmit} className="p-3 border-t flex items-center">
+      <button
+        type="button"
+        onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+        className="p-2 text-gray-500 hover:text-gray-700 rounded-full hover:bg-gray-100"
+      >
+        <BsEmojiSmile className="text-xl" />
+      </button>
+
+      <button
+        type="button"
+        className="p-2 text-gray-500 hover:text-gray-700 rounded-full hover:bg-gray-100"
+      >
+        <MdOutlineAttachFile className="text-xl" />
+      </button>
+
+      <div className="relative flex-1 mx-2">
+        {showEmojiPicker && (
+          <div className="absolute bottom-12 left-0 z-10" ref={emojiPickerRef}>
+            <Picker
+              data={data}
+              onEmojiSelect={handleEmojiSelect}
+              theme="light"
+              set="apple"
             />
-          </svg>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => fileInputRef.current?.click()}
-          className="text-gray-500 hover:text-gray-700"
-        >
-          <svg
-            className="w-6 h-6"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M15.172 7l-3.586 3.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"
-            />
-          </svg>
-        </button>
-
+          </div>
+        )}
         <input
-          type="file"
-          ref={fileInputRef}
-          className="hidden"
-          onChange={handleFileUpload}
-        />
-
-        <input
+          ref={inputRef}
           type="text"
-          value={messageText}
-          onChange={(e) => {
-            setMessageText(e.target.value);
-            handleTyping();
-          }}
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          onKeyPress={handleKeyPress}
           placeholder="Type a message..."
-          className="flex-1 border border-gray-300 rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full p-2 rounded-full border bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
+      </div>
 
-        <button
-          type="submit"
-          disabled={!messageText.trim()}
-          className="bg-blue-500 text-white rounded-full p-2 hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          <svg
-            className="w-6 h-6"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
-            />
-          </svg>
-        </button>
-      </form>
-
-      {showEmojiPicker && (
-        <div className="absolute bottom-20 left-4 z-10">
-          <Picker data={data} onEmojiSelect={handleEmojiSelect} theme="light" />
-        </div>
-      )}
-    </div>
+      <button
+        type="submit"
+        disabled={!message.trim()}
+        className={`p-2 rounded-full ${
+          message.trim()
+            ? "bg-blue-500 text-white hover:bg-blue-600"
+            : "bg-gray-200 text-gray-400 cursor-not-allowed"
+        }`}
+      >
+        <IoMdSend className="text-xl" />
+      </button>
+    </form>
   );
 };
 

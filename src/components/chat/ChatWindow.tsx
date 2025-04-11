@@ -1,38 +1,35 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { User, Message } from "../../types/chat";
 import { format } from "date-fns";
 import data from "@emoji-mart/data";
 import Picker from "@emoji-mart/react";
+import { useSocket } from "../../context/SocketContext";
 
 interface ChatWindowProps {
   selectedUser: User | null;
 }
 
 const ChatWindow: React.FC<ChatWindowProps> = ({ selectedUser }) => {
-  const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const { chatState, socket } = useSocket();
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const handleSendMessage = () => {
-    if (newMessage.trim() && selectedUser) {
-      const message: Message = {
-        _id: Date.now().toString(),
-        text: newMessage,
-        sender: selectedUser,
-        receiver: selectedUser,
-        timestamp: new Date(),
-        isRead: false,
-        type: "text",
-      };
-      setMessages([...messages, message]);
-      setNewMessage("");
-    }
-  };
+  const currentChatMessages = chatState.messages.filter(
+    (msg) =>
+      (msg.sender._id === chatState.currentChat?._id &&
+        msg.receiver._id === selectedUser?._id) ||
+      (msg.receiver._id === chatState.currentChat?._id &&
+        msg.sender._id === selectedUser?._id)
+  );
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [currentChatMessages]);
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      handleSendMessage();
     }
   };
 
@@ -66,18 +63,18 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ selectedUser }) => {
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {messages.map((message) => (
+        {currentChatMessages.map((message) => (
           <div
             key={message._id}
             className={`flex ${
-              message.sender._id === selectedUser._id
+              message.sender._id === chatState.currentChat?._id
                 ? "justify-end"
                 : "justify-start"
             }`}
           >
             <div
               className={`max-w-[70%] rounded-lg p-3 ${
-                message.sender._id === selectedUser._id
+                message.sender._id === chatState.currentChat?._id
                   ? "bg-blue-500 text-white"
                   : "bg-gray-100"
               }`}
@@ -85,48 +82,17 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ selectedUser }) => {
               <p>{message.text}</p>
               <p
                 className={`text-xs mt-1 ${
-                  message.sender._id === selectedUser._id
+                  message.sender._id === chatState.currentChat?._id
                     ? "text-blue-100"
                     : "text-gray-500"
                 }`}
               >
-                {format(message.timestamp, "HH:mm")}
+                {format(new Date(message.timestamp), "HH:mm")}
               </p>
             </div>
           </div>
         ))}
-      </div>
-
-      {/* Message Input */}
-      <div className="p-4 border-t relative">
-        {showEmojiPicker && (
-          <div className="absolute bottom-full right-0 mb-2">
-            <Picker data={data} onEmojiSelect={addEmoji} />
-          </div>
-        )}
-        <div className="flex items-center">
-          <button
-            onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-            className="p-2 text-gray-500 hover:text-gray-700"
-          >
-            😊
-          </button>
-          <textarea
-            value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
-            onKeyPress={handleKeyPress}
-            placeholder="Type a message..."
-            className="flex-1 border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
-            rows={1}
-          />
-          <button
-            onClick={handleSendMessage}
-            disabled={!newMessage.trim()}
-            className="ml-2 p-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            Send
-          </button>
-        </div>
+        <div ref={messagesEndRef} />
       </div>
     </div>
   );

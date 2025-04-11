@@ -1,25 +1,31 @@
 import React, { useEffect, useRef } from "react";
-import { Message } from "../../types/chat";
+import { Message /* , User */ } from "../../types/chat";
 import { useSocket } from "../../context/SocketContext";
 import { format } from "date-fns";
 
 interface ChatMessagesProps {
   messages: Message[];
+  loggedInUserId: string | undefined;
 }
 
-const ChatMessages: React.FC<ChatMessagesProps> = ({ messages }) => {
-  const { chatState, markMessageAsRead } = useSocket();
+const ChatMessages: React.FC<ChatMessagesProps> = ({
+  messages,
+  loggedInUserId,
+}) => {
+  const { /* chatState, */ markMessageAsRead } = useSocket();
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // Mark messages as read when they come into view
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
             const messageId = entry.target.getAttribute("data-message-id");
             if (messageId) {
-              markMessageAsRead(messageId);
+              const msg = messages.find((m) => m._id === messageId);
+              if (msg && msg.sender._id !== loggedInUserId) {
+                markMessageAsRead(messageId);
+              }
             }
           }
         });
@@ -37,20 +43,16 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({ messages }) => {
     });
 
     return () => observer.disconnect();
-  }, [messages, markMessageAsRead]);
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
+  }, [messages, markMessageAsRead, loggedInUserId]);
 
   useEffect(() => {
-    scrollToBottom();
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
   return (
     <div className="flex-1 overflow-y-auto p-4 space-y-4">
       {messages.map((message) => {
-        const isOwnMessage = message.sender._id === chatState.currentChat?._id;
+        const isOwnMessage = message.sender._id === loggedInUserId;
         const messageDate = new Date(message.timestamp);
 
         return (

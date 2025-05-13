@@ -1,6 +1,6 @@
 # Task Manager Frontend
 
-A modern React application for managing tasks, built with Vite, React, TypeScript, and Tailwind CSS.
+A full-stack task management application that allows users to register, login, create tasks, update them, and visualize stats through a dashboard. Built with Vite, React, TypeScript, and Tailwind CSS.
 
 ## Deployment
 
@@ -80,6 +80,55 @@ task-manager-fe/
 ├── index.html             # HTML template
 └── tailwind.config.js     # Tailwind CSS configuration
 ```
+
+## 📸 Screenshots
+
+### 🔐 Register Page
+User can sign up by providing basic details to create a new account.
+
+![Register Page](./src/assets/screenshot/register.png)
+
+---
+
+### 🔑 Login Page
+User can securely log in using registered credentials.
+
+![Login Page](./src/assets/screenshot/login.png)
+
+---
+
+### ➕ Create New Task
+User can add a new task by specifying title, description, category, and due date.
+
+![Create Task Page](./src/assets/screenshot/create-task.png)
+
+---
+
+### 📋 Task List Page
+Displays a list of all created tasks with filtering options and the ability to edit or delete.
+
+![Task List Page](./src/assets/screenshot/task-list.png)
+
+---
+
+### ✅ Mark Task Complete
+User can mark tasks as complete directly from the task list.
+
+![Mark Complete](./src/assets/screenshot/mark-complete.png)
+
+---
+
+### ✏️ Update Task
+Edit any task’s details including title, category, status, and due date.
+
+![Edit Task Page](./src/assets/screenshot/edit-task.png)
+
+---
+
+### 📊 Dashboard
+Visual representation of completed vs pending tasks and other key stats.
+
+![Dashboard Stats](./src/assets/screenshot/stats-dashboard.png)
 
 ## License
 
